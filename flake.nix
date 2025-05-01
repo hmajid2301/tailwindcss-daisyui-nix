@@ -16,12 +16,20 @@
             system = "x86_64-linux";
             nodejs = final.nodejs;
           };
-        in
-        {
+        in {
           tailwindcss = final.writeShellApplication {
             name = "tailwindcss";
-            runtimeEnv.NODE_PATH = "${generated.nodeDependencies}/lib/node_modules";
-            text = "exec ${generated.nodeDependencies}/bin/tailwindcss \"$@\"";
+            runtimeEnv.NODE_PATH =
+              "${generated.nodeDependencies}/lib/node_modules";
+            text = ''exec ${generated.nodeDependencies}/bin/tailwindcss "$@"'';
+          };
+
+          tailwindcss-language-server = final.writeShellApplication {
+            name = "tailwindcss-language-server";
+            runtimeEnv.NODE_PATH =
+              "${generated.nodeDependencies}/lib/node_modules";
+            text = ''
+              exec ${generated.nodeDependencies}/bin/tailwindcss-language-server "$@"'';
           };
         });
 
@@ -83,8 +91,7 @@
         test = test;
       };
 
-    in
-    {
+    in {
 
       packages.x86_64-linux = packages // {
         gcroot = pkgs.linkFarm "gcroot" packages;
@@ -95,13 +102,11 @@
       formatter.x86_64-linux = treefmtEval.config.build.wrapper;
       overlays.default = overlay;
 
-      apps.x86_64-linux = builtins.mapAttrs
-        (name: script: {
-          type = "app";
-          program = pkgs.lib.getExe script;
-          meta.description = "Script ${name}";
-        })
-        scripts;
+      apps.x86_64-linux = builtins.mapAttrs (name: script: {
+        type = "app";
+        program = pkgs.lib.getExe script;
+        meta.description = "Script ${name}";
+      }) scripts;
 
     };
 }
